@@ -1,0 +1,13 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.DS_Store
+.env
+.env.*
+coverage/
+.idea/
+.vscode/
+*.log
+
+# Local-only full README trail (not published)
+README.full.local.md
