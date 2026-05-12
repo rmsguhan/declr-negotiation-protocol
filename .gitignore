@@ -1,5 +1,8 @@
 node_modules/
 dist/
+
+# Cursor IDE (local rules; do not publish)
+.cursor/
 *.tsbuildinfo
 .DS_Store
 .env
