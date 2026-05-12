@@ -1,0 +1,19 @@
+---
+description: DNP repo context — spec sources and conflict rules
+globs: "**/*"
+alwaysApply: false
+---
+
+# Declr Negotiation Protocol — context
+
+Read in order:
+
+1. **`AGENTS.md`** — entry point; tooling and layout expectations.
+2. **`README.md`** — short public overview (vision, principles, architecture).
+3. **`README.full.local.md`** — if present (gitignored), **normative protocol prose** (payloads, message types, Agent Card, validation). Do not invent wire formats or fields; use this file or ask the maintainer.
+
+**Conflict rule:** `AGENTS.md` wins for **structure, tooling, and repo layout**. **Protocol semantics** come from **`README.full.local.md` when present** plus the short `README.md`; if unclear, stop and ask—do not guess.
+
+**Package order** (when the monorepo exists): `protocol` → `strategies` → `agent` → `examples/*`. Enforce with TypeScript project references.
+
+**Do not** add DNP `messageType` values or top-level payload fields without explicit maintainer approval.

@@ -1,6 +1,6 @@
 # Agent instructions — Declr Negotiation Protocol (DNP)
 
-> Durable guidance for coding agents (Cursor, Codex, Claude Code). Parent workspace **Declr** loads Cursor rules from `.cursor/rules/declr-dnp-*.mdc` when you work under `NegotiationProtocol/`.
+> Durable guidance for coding agents (Cursor, Codex, Claude Code). This repo ships **Cursor project rules** under [`.cursor/rules/`](.cursor/rules/) (scoped by globs). To seed **Cursor Memories**, follow [`.cursor/memories-seed.md`](.cursor/memories-seed.md) (no CLI—paste into Settings → Memories).
 
 This file is for **coding agents**. Keep it concise.
 
