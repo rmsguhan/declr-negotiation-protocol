@@ -41,15 +41,61 @@ describe('validateRoundMonotonic', () => {
     expect(r.ok).toBe(true);
   });
 
-  it('rejects non-increasing rounds', () => {
+  it('allows a strictly increasing round', () => {
+    const r = validateRoundMonotonic(2, 3);
+    expect(r.ok).toBe(true);
+  });
+
+  it('rejects non-increasing rounds (same number)', () => {
     const r = validateRoundMonotonic(3, 3);
     expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error.kind).toBe('round_not_strictly_increasing');
+  });
+
+  it('rejects a regressed round', () => {
+    const r = validateRoundMonotonic(5, 3);
+    expect(r.ok).toBe(false);
+  });
+
+  it('rejects round 0', () => {
+    const r = validateRoundMonotonic(undefined, 0);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error.kind).toBe('round_non_positive');
+  });
+
+  it('rejects negative round', () => {
+    const r = validateRoundMonotonic(undefined, -1);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error.kind).toBe('round_non_positive');
   });
 });
 
 describe('validateExpiresAt', () => {
   it('is a no-op when omitted', () => {
     expect(validateExpiresAt(undefined, Date.now()).ok).toBe(true);
+  });
+
+  it('accepts a timestamp in the future', () => {
+    const futureMs = Date.now() + 60_000;
+    const r = validateExpiresAt(new Date(futureMs).toISOString(), Date.now());
+    expect(r.ok).toBe(true);
+  });
+
+  it('rejects a timestamp in the past', () => {
+    const pastMs = Date.now() - 60_000;
+    const r = validateExpiresAt(new Date(pastMs).toISOString(), Date.now());
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.error.kind).toBe('expires_at_in_past');
+    }
+  });
+
+  it('rejects a non-ISO string', () => {
+    const r = validateExpiresAt('not-a-date', Date.now());
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.error.kind).toBe('expires_at_invalid_iso');
+    }
   });
 });
 

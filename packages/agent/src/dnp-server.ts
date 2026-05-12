@@ -3,6 +3,7 @@ import type { AgentCard } from '@a2a-js/sdk';
 import { AGENT_CARD_PATH } from '@a2a-js/sdk';
 import { DefaultRequestHandler, InMemoryTaskStore, type AgentExecutor } from '@a2a-js/sdk/server';
 import { agentCardHandler, jsonRpcHandler, UserBuilder } from '@a2a-js/sdk/server/express';
+import { normalizeBaseUrl } from './utils.js';
 
 export type DnpAgentServerOptions = {
   /** Fully qualified public base (e.g. `http://localhost:4101`). */
@@ -38,8 +39,4 @@ export function createDnpExpressApp(options: DnpAgentServerOptions): Express {
   );
 
   return app;
-}
-
-function normalizeBaseUrl(url: string): string {
-  return url.endsWith('/') ? url.slice(0, -1) : url;
 }

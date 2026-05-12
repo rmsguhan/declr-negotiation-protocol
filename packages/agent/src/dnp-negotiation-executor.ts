@@ -14,10 +14,7 @@ export type DnpExecutorOptions = {
    * Optional prior round persisted by the host (one negotiation = one task / `contextId`).
    * v0.1 demo leaves this undefined so only structural checks run.
    */
-  priorRoundForNegotiation?: (
-    contextId: string,
-    taskId: string,
-  ) => number | undefined | Promise<number | undefined>;
+  priorRoundForNegotiation?: (contextId: string, taskId: string) => Promise<number | undefined>;
 };
 
 /** Map SDK `RequestContext` plus parsed DNP envelope. */
@@ -121,7 +118,7 @@ export class DnpNegotiationExecutor implements AgentExecutor {
       contextId: requestContext.contextId,
       parts: [
         { kind: 'text', text: rationale },
-        { kind: 'data', data: dnp as unknown as Record<string, unknown> },
+        { kind: 'data', data: JSON.parse(JSON.stringify(dnp)) as Record<string, unknown> },
       ],
     };
     eventBus.publish(response);

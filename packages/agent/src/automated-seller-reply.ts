@@ -14,9 +14,18 @@ export function buildAutomatedSellerReply(
 ): AutomatedSellerReply {
   const verdict = orchestrator.evaluateInbound(inbound);
   if (!verdict.ok) {
+    const rationale = `Negotiation terminated: ${verdict.error.kind} on parameter ${verdict.error.strategyParameter}`;
+    const base = withAgentSwap(inbound, {
+      messageType: 'reject',
+      negotiationState: {
+        ...inbound.negotiationState,
+        roundNumber: inbound.negotiationState.roundNumber + 1,
+      },
+    });
     return {
-      kind: 'text_reject',
-      text: `Orchestrator rejection: ${JSON.stringify(verdict.error)}`,
+      kind: 'dnp',
+      dnp: { ...base, context: { ...base.context, rationale } },
+      rationale,
     };
   }
   if (verdict.value.kind === 'needs_reject') {

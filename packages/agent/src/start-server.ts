@@ -2,6 +2,7 @@ import type { AgentCard } from '@a2a-js/sdk';
 import type { ListenOptions } from 'node:net';
 import type { Server } from 'node:http';
 import { createDnpExpressApp, type DnpAgentServerOptions } from './dnp-server.js';
+import { normalizeBaseUrl } from './utils.js';
 
 export type StartDnpServerInput = Omit<DnpAgentServerOptions, 'agentCard'> & {
   readonly host?: string | undefined;
@@ -48,10 +49,6 @@ export async function startDnpNegotiationServer(
       });
     },
   };
-}
-
-function normalizeBaseUrl(url: string): string {
-  return url.endsWith('/') ? url.slice(0, -1) : url;
 }
 
 function stripAdditionalInterfaces(

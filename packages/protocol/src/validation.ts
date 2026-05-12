@@ -4,7 +4,7 @@ import { err, ok } from './result.js';
 import type { DnpValidationError } from './errors.js';
 import { DnpPayloadSchema, type DnpPayload } from './schemas.js';
 
-/** Parse and validate structural shape of an unknown payload. */
+/** Parse and validate structural shape of an unknown payload. Does not check TTL. */
 export function parseDnpPayload(data: unknown): Result<DnpPayload, DnpValidationError> {
   const parsed = DnpPayloadSchema.safeParse(data);
   if (!parsed.success) {
@@ -16,14 +16,7 @@ export function parseDnpPayload(data: unknown): Result<DnpPayload, DnpValidation
       })),
     });
   }
-
-  const value = parsed.data;
-  const exp = expiresIfInvalid(value.metadata.expiresAt);
-  if (exp) {
-    return err(exp);
-  }
-
-  return ok(value);
+  return ok(parsed.data);
 }
 
 /**
@@ -41,7 +34,7 @@ export function validateExpiresAt(
 
 function expiresIfInvalid(
   expiresAt: string | undefined,
-  nowMs: number = Date.now(),
+  nowMs: number,
 ): DnpValidationError | undefined {
   if (expiresAt === undefined) {
     return undefined;
@@ -94,8 +87,7 @@ export function parseDnpPayloadWithNegotiationContext(
   if (!base.ok) {
     return base;
   }
-  const nowMs = options?.nowMs ?? Date.now();
-  const exp = expiresIfInvalid(base.value.metadata.expiresAt, nowMs);
+  const exp = expiresIfInvalid(base.value.metadata.expiresAt, options?.nowMs ?? Date.now());
   if (exp) {
     return err(exp);
   }

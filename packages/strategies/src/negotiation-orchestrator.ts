@@ -1,8 +1,14 @@
 import type { DnpPayload, Logger, NegotiationParameters, Result } from '@declr/dnp-protocol';
-import { err, ok } from '@declr/dnp-protocol';
+import {
+  DeliveryMethodSchema,
+  DeliverySpeedParameterSchema,
+  NegotiationParametersSchema,
+  PriceParameterSchema,
+  err,
+  ok,
+} from '@declr/dnp-protocol';
 import { parametersWithinStrategies, type BoundsViolation } from './bounds.js';
-import type { NegotiationStrategy } from './negotiation-strategy.js';
-import type { StrategyDecision } from './negotiation-strategy.js';
+import type { NegotiationStrategy, StrategyDecision } from './negotiation-strategy.js';
 import type { StrategyContext } from './strategy-context.js';
 
 export type OrchestratorVerdict =
@@ -10,11 +16,17 @@ export type OrchestratorVerdict =
   | { readonly kind: 'needs_counter'; readonly parameters: NegotiationParameters }
   | { readonly kind: 'needs_reject'; readonly violation: BoundsViolation };
 
-export type OrchestratorFailure = {
-  readonly kind: 'strategy_non_accept_outcome_not_handled_yet';
-  readonly strategyParameter: NegotiationStrategy['parameterId'];
-  readonly decision: StrategyDecision;
-};
+export type OrchestratorFailure =
+  | {
+      readonly kind: 'strategy_non_accept_outcome_not_handled_yet';
+      readonly strategyParameter: NegotiationStrategy['parameterId'];
+      readonly decision: StrategyDecision;
+    }
+  | {
+      readonly kind: 'strategy_proposed_invalid_value';
+      readonly strategyParameter: NegotiationStrategy['parameterId'];
+      readonly proposed: unknown;
+    };
 
 /**
  * Composes individual parameter strategies for bilateral v0.1 demos.
@@ -64,6 +76,17 @@ export class NegotiationOrchestrator {
       }
       if (decision.action === 'counter') {
         const next = mergeCounter(nextBaseline, s.parameterId, decision.proposed);
+        if (next === undefined) {
+          this.logger.warn('Strategy proposed an invalid value for parameter', {
+            parameterId: s.parameterId,
+            proposed: decision.proposed,
+          });
+          return err({
+            kind: 'strategy_proposed_invalid_value',
+            strategyParameter: s.parameterId,
+            proposed: decision.proposed,
+          });
+        }
         return ok({ kind: 'needs_counter', parameters: next });
       }
     }
@@ -72,47 +95,29 @@ export class NegotiationOrchestrator {
   }
 }
 
+/** Returns undefined when `proposed` does not conform to the parameter's schema. */
 function mergeCounter(
   baseline: NegotiationParameters,
   id: keyof NegotiationParameters,
   proposed: unknown,
-): NegotiationParameters {
+): NegotiationParameters | undefined {
   switch (id) {
     case 'price': {
-      if (
-        proposed &&
-        typeof proposed === 'object' &&
-        'value' in proposed &&
-        'currency' in proposed
-      ) {
-        const o = proposed as { value?: unknown; currency?: unknown };
-        const v = o.value;
-        const c = o.currency;
-        if (typeof v === 'number' && typeof c === 'string') {
-          return { ...baseline, price: { value: v, currency: c } };
-        }
-      }
-      return baseline;
+      const r = PriceParameterSchema.safeParse(proposed);
+      return r.success ? { ...baseline, price: r.data } : undefined;
     }
     case 'deliverySpeedDays': {
-      if (proposed && typeof proposed === 'object' && 'min' in proposed && 'max' in proposed) {
-        const o = proposed as { min?: unknown; max?: unknown };
-        const min = o.min;
-        const max = o.max;
-        if (typeof min === 'number' && typeof max === 'number') {
-          return { ...baseline, deliverySpeedDays: { min, max } };
-        }
-      }
-      return baseline;
+      const r = DeliverySpeedParameterSchema.safeParse(proposed);
+      return r.success ? { ...baseline, deliverySpeedDays: r.data } : undefined;
     }
     case 'deliveryMethod': {
-      if (proposed === 'postal' || proposed === 'hand_deliver' || proposed === 'courier') {
-        return { ...baseline, deliveryMethod: proposed };
-      }
-      return baseline;
+      const r = DeliveryMethodSchema.safeParse(proposed);
+      return r.success ? { ...baseline, deliveryMethod: r.data } : undefined;
     }
-    case 'quantity':
-      return typeof proposed === 'number' ? { ...baseline, quantity: proposed } : baseline;
+    case 'quantity': {
+      const r = NegotiationParametersSchema.shape.quantity.safeParse(proposed);
+      return r.success ? { ...baseline, quantity: r.data } : undefined;
+    }
     default:
       return baseline;
   }

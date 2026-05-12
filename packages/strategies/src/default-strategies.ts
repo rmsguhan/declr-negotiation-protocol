@@ -24,8 +24,7 @@ export class PriceNegotiationStrategy extends NegotiationStrategy {
     return value.value >= this.bounds.min && value.value <= this.bounds.max;
   }
 
-  evaluateInbound(value: NegotiationParameters['price'], ctx: StrategyContext): StrategyDecision {
-    void ctx;
+  evaluateInbound(value: NegotiationParameters['price'], _ctx: StrategyContext): StrategyDecision {
     if (!this.isWithinBounds(value)) {
       return { action: 'counter', proposed: { value: this.bounds.max, currency: value.currency } };
     }
@@ -53,9 +52,8 @@ export class DeliverySpeedNegotiationStrategy extends NegotiationStrategy {
 
   evaluateInbound(
     value: NegotiationParameters['deliverySpeedDays'],
-    ctx: StrategyContext,
+    _ctx: StrategyContext,
   ): StrategyDecision {
-    void ctx;
     if (!this.isWithinBounds(value)) {
       return {
         action: 'counter',
@@ -79,9 +77,8 @@ export class DeliveryMethodNegotiationStrategy extends NegotiationStrategy {
 
   evaluateInbound(
     value: NegotiationParameters['deliveryMethod'],
-    ctx: StrategyContext,
+    _ctx: StrategyContext,
   ): StrategyDecision {
-    void ctx;
     if (!this.isWithinBounds(value)) {
       const first = [...this.allowed][0];
       return { action: 'counter', proposed: first ?? value };
@@ -106,9 +103,8 @@ export class QuantityNegotiationStrategy extends NegotiationStrategy {
 
   evaluateInbound(
     value: NegotiationParameters['quantity'],
-    ctx: StrategyContext,
+    _ctx: StrategyContext,
   ): StrategyDecision {
-    void ctx;
     if (!this.isWithinBounds(value)) {
       return { action: 'counter', proposed: this.maxQty };
     }
