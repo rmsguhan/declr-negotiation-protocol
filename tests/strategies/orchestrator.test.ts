@@ -69,9 +69,9 @@ describe('NegotiationOrchestrator', () => {
   const dm = new DeliveryMethodNegotiationStrategy(new Set(['postal', 'courier']));
   const qty = new QuantityNegotiationStrategy(1, 10);
 
-  it('reports bounds violations when coarse checks fail', () => {
+  it('surfaces a formal reject verdict when coarse bounds fail (e.g. price below seller floor)', () => {
     const orch = new NegotiationOrchestrator([price, speed, dm, qty], noopLogger);
-    const violation = orch.evaluateInbound({
+    const verdict = orch.evaluateInbound({
       ...basePayload,
       negotiationState: {
         ...basePayload.negotiationState,
@@ -81,9 +81,13 @@ describe('NegotiationOrchestrator', () => {
         },
       },
     });
-    expect(violation.ok).toBe(false);
-    if (!violation.ok) {
-      expect(violation.error.kind).toBe('parameter_out_of_bounds');
+    expect(verdict.ok).toBe(true);
+    if (verdict.ok) {
+      expect(verdict.value.kind).toBe('needs_reject');
+      if (verdict.value.kind === 'needs_reject') {
+        expect(verdict.value.violation.kind).toBe('parameter_out_of_bounds');
+        expect(verdict.value.violation.parameterId).toBe('price');
+      }
     }
   });
 

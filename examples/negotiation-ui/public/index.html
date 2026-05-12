@@ -3,59 +3,154 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>DNP negotiation — live timeline</title>
+    <title>DNP negotiation — multi-buyer workspace</title>
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
     <header class="top">
-      <div>
-        <h1>Negotiation timeline</h1>
-        <p class="sub">
-          Each send goes through real A2A JSON-RPC on this host. The seller uses the same strategies as
-          <code>seller-agent</code>.
-        </p>
-      </div>
+      <h1>Multi-buyer negotiation lab</h1>
+      <p class="sub">
+        Each <strong>thread</strong> is one buyer identity talking to one seller identity. The seller can juggle many threads. Pick
+        <strong>Human</strong> or <strong>Agentic</strong> for buyer and seller on the <strong>first buyer message only</strong> — then modes lock.
+        REST runs negotiation in-process; external tools can still use A2A on the same host.
+      </p>
     </header>
 
-    <main class="layout">
-      <section class="panel controls" aria-labelledby="ctl-h">
-        <h2 id="ctl-h">Your next message (buyer)</h2>
-        <p class="hint"><code>contextId</code> is fixed for the thread so you can run multiple rounds.</p>
+    <section class="toolbar" aria-label="Thread and mode controls">
+      <div class="toolbar-row">
+        <button type="button" id="new-thread" class="primary">New buyer thread</button>
+        <button type="button" id="refresh-threads" class="ghost">Refresh list</button>
+      </div>
+      <div class="toolbar-row toolbar-modes">
+        <label class="inline"
+          >Focus thread
+          <select id="focus-thread"></select>
+        </label>
+        <label class="inline"
+          >Buyer
+          <select id="buyer-mode">
+            <option value="human">Human</option>
+            <option value="agentic">Agentic</option>
+          </select>
+        </label>
+        <label class="inline"
+          >Seller
+          <select id="seller-mode">
+            <option value="human">Human</option>
+            <option value="agentic">Agentic</option>
+          </select>
+        </label>
+        <span id="mode-lock-hint" class="hint-inline">Modes unlock until the first buyer send on this thread.</span>
+      </div>
+      <p id="status" class="status" role="status"></p>
+    </section>
 
-        <div class="grid">
-          <label>Round <input id="round" type="number" min="1" value="1" /></label>
-          <label
-            >Type
-            <select id="msgType">
-              <option value="proposal">proposal</option>
-              <option value="counter">counter</option>
-              <option value="accept">accept</option>
-            </select>
-          </label>
-          <label>Price (USD) <input id="price" type="number" step="1" value="135" /></label>
-          <label>Quantity <input id="qty" type="number" min="1" value="1" /></label>
-          <label
-            >Delivery
-            <select id="method">
-              <option value="postal">postal</option>
-              <option value="courier">courier</option>
-              <option value="hand_deliver">hand_deliver</option>
-            </select>
-          </label>
-          <label>Speed min (d) <input id="dmin" type="number" value="3" /></label>
-          <label>Speed max (d) <input id="dmax" type="number" value="6" /></label>
-        </div>
+    <main class="split-panes" aria-label="Buyer and seller panes">
+      <section class="pane pane-buyer" aria-labelledby="buyer-pane-title">
+        <h2 id="buyer-pane-title" class="pane-title">Buyer</h2>
+        <p class="thread-meta" id="buyer-thread-meta"></p>
 
-        <div class="actions">
-          <button type="button" id="send" class="primary">Send to seller</button>
-          <button type="button" id="reset" class="ghost">New thread (new context)</button>
-        </div>
-        <p id="status" class="status" role="status"></p>
+        <section class="subpanel" aria-labelledby="buyer-recv-h">
+          <h3 id="buyer-recv-h" class="subpanel-title">Received from seller</h3>
+          <div id="buyer-received" class="card-body empty-state">No seller reply for this thread yet.</div>
+        </section>
+
+        <section class="subpanel" aria-labelledby="buyer-out-h">
+          <h3 id="buyer-out-h" class="subpanel-title">Counter / next message</h3>
+          <p id="buyer-compose-hint" class="hint">Human buyer: edit and send. Agentic buyer: the demo auto-sends counters after each seller message.</p>
+          <div id="buyer-compose-fields">
+            <div class="grid">
+              <label>Round <input id="round" type="number" min="1" value="1" /></label>
+              <label
+                >Type
+                <select id="msgType">
+                  <option value="proposal">proposal</option>
+                  <option value="counter">counter</option>
+                  <option value="accept">accept</option>
+                  <option value="reject">reject</option>
+                </select>
+              </label>
+              <label>Price (USD) <input id="price" type="number" step="1" value="100" /></label>
+              <label>Quantity <input id="qty" type="number" min="1" value="1" /></label>
+              <label
+                >Delivery
+                <select id="method">
+                  <option value="postal">postal</option>
+                  <option value="courier">courier</option>
+                  <option value="hand_deliver">hand_deliver</option>
+                </select>
+              </label>
+              <label>Speed min (d) <input id="dmin" type="number" value="3" /></label>
+              <label>Speed max (d) <input id="dmax" type="number" value="6" /></label>
+            </div>
+            <div class="actions">
+              <button type="button" id="send-buyer" class="primary">Send buyer message</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="subpanel subpanel-grow" aria-labelledby="buyer-hist-h">
+          <h3 id="buyer-hist-h" class="subpanel-title">Message history</h3>
+          <ul id="buyer-history" class="hist-list" aria-live="polite"></ul>
+        </section>
       </section>
 
-      <section class="panel feed" aria-labelledby="feed-h">
-        <h2 id="feed-h">Back and forth</h2>
-        <div id="timeline" class="timeline"></div>
+      <section class="pane pane-seller" aria-labelledby="seller-pane-title">
+        <h2 id="seller-pane-title" class="pane-title">Seller</h2>
+        <div class="seller-split">
+          <aside class="thread-rail" aria-label="All buyer threads">
+            <h3 class="rail-title">Threads</h3>
+            <ul id="seller-thread-list" class="thread-chips"></ul>
+          </aside>
+          <div class="seller-main">
+            <p class="thread-meta" id="seller-thread-meta"></p>
+
+            <section class="subpanel" aria-labelledby="seller-recv-h">
+              <h3 id="seller-recv-h" class="subpanel-title">Received from buyer</h3>
+              <div id="seller-received" class="card-body empty-state">Select a thread with buyer traffic.</div>
+            </section>
+
+            <section class="subpanel" aria-labelledby="seller-out-h">
+              <h3 id="seller-out-h" class="subpanel-title">Counter / accept / reject</h3>
+              <p id="seller-out-hint" class="hint"></p>
+              <div id="seller-automated" class="card-body empty-state"></div>
+              <div id="seller-human-compose" class="human-seller-wrap hidden">
+                <p class="hint">Human seller: compose the outbound DNP, then send.</p>
+                <div class="grid">
+                  <label>Round <input id="s-round" type="number" min="1" value="1" /></label>
+                  <label
+                    >Type
+                    <select id="s-msgType">
+                      <option value="counter">counter</option>
+                      <option value="accept">accept</option>
+                      <option value="reject">reject</option>
+                    </select>
+                  </label>
+                  <label>Price (USD) <input id="s-price" type="number" step="1" /></label>
+                  <label>Quantity <input id="s-qty" type="number" min="1" /></label>
+                  <label
+                    >Delivery
+                    <select id="s-method">
+                      <option value="postal">postal</option>
+                      <option value="courier">courier</option>
+                      <option value="hand_deliver">hand_deliver</option>
+                    </select>
+                  </label>
+                  <label>Speed min <input id="s-dmin" type="number" /></label>
+                  <label>Speed max <input id="s-dmax" type="number" /></label>
+                </div>
+                <div class="actions">
+                  <button type="button" id="send-seller" class="primary seller-send">Send seller reply</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="subpanel subpanel-grow" aria-labelledby="seller-hist-h">
+              <h3 id="seller-hist-h" class="subpanel-title">Message history</h3>
+              <ul id="seller-history" class="hist-list" aria-live="polite"></ul>
+            </section>
+          </div>
+        </div>
       </section>
     </main>
 

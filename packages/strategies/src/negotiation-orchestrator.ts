@@ -7,21 +7,20 @@ import type { StrategyContext } from './strategy-context.js';
 
 export type OrchestratorVerdict =
   | { readonly kind: 'all_parameters_acceptable' }
-  | { readonly kind: 'needs_counter'; readonly parameters: NegotiationParameters };
+  | { readonly kind: 'needs_counter'; readonly parameters: NegotiationParameters }
+  | { readonly kind: 'needs_reject'; readonly violation: BoundsViolation };
 
-export type OrchestratorFailure =
-  | BoundsViolation
-  | {
-      readonly kind: 'strategy_non_accept_outcome_not_handled_yet';
-      readonly strategyParameter: NegotiationStrategy['parameterId'];
-      readonly decision: StrategyDecision;
-    };
+export type OrchestratorFailure = {
+  readonly kind: 'strategy_non_accept_outcome_not_handled_yet';
+  readonly strategyParameter: NegotiationStrategy['parameterId'];
+  readonly decision: StrategyDecision;
+};
 
 /**
  * Composes individual parameter strategies for bilateral v0.1 demos.
  *
- * This is intentionally minimal: it either accepts the inbound map or suggests
- * a counter by applying the first rejecting strategy's proposal stub.
+ * Outcomes: accept all parameters, counter with adjusted parameters, or (when coarse
+ * bounds fail) a formal `needs_reject` verdict for threshold-based decline.
  */
 export class NegotiationOrchestrator {
   constructor(
@@ -35,10 +34,13 @@ export class NegotiationOrchestrator {
   evaluateInbound(payload: DnpPayload): Result<OrchestratorVerdict, OrchestratorFailure> {
     const within = parametersWithinStrategies(payload.negotiationState.parameters, this.strategies);
     if (!within.ok) {
-      this.logger.warn('Inbound parameters violate strategy bounds', {
-        parameterId: within.error.parameterId,
-      });
-      return err(within.error);
+      this.logger.warn(
+        'Inbound parameters violate strategy bounds — will surface as formal reject',
+        {
+          parameterId: within.error.parameterId,
+        },
+      );
+      return ok({ kind: 'needs_reject', violation: within.error });
     }
 
     const ctx: StrategyContext = { roundNumber: payload.negotiationState.roundNumber };

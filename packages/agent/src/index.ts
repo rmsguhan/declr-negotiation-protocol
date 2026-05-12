@@ -1,3 +1,8 @@
+export {
+  buildAutomatedSellerReply,
+  withAgentSwap,
+  type AutomatedSellerReply,
+} from './automated-seller-reply.js';
 export { DnpNegotiationExecutor, type DnpExecutorOptions } from './dnp-negotiation-executor.js';
 export { createDnpExpressApp, type DnpAgentServerOptions } from './dnp-server.js';
 export { startDnpNegotiationServer, type StartDnpServerInput } from './start-server.js';

@@ -4,6 +4,7 @@ import type { DnpPayload, Logger } from '@declr/dnp-protocol';
 import { parseDnpPayloadWithNegotiationContext } from '@declr/dnp-protocol';
 import type { NegotiationOrchestrator } from '@declr/dnp-strategies';
 import { randomUUID } from 'node:crypto';
+import { buildAutomatedSellerReply, withAgentSwap } from './automated-seller-reply.js';
 import { extractDataPartRecords } from './extract-data-parts.js';
 
 export type DnpExecutorOptions = {
@@ -69,36 +70,12 @@ export class DnpNegotiationExecutor implements AgentExecutor {
     });
 
     if (this.opts.orchestrator) {
-      const verdict = this.opts.orchestrator.evaluateInbound(dnp);
-      if (!verdict.ok) {
-        this.publishTextOnly(
-          eventBus,
-          requestContext,
-          `Orchestrator rejection: ${JSON.stringify(verdict.error)}`,
-        );
+      const auto = buildAutomatedSellerReply(dnp, this.opts.orchestrator);
+      if (auto.kind === 'text_reject') {
+        this.publishTextOnly(eventBus, requestContext, auto.text);
         return;
       }
-      if (verdict.value.kind === 'needs_counter') {
-        const counter: DnpPayload = withAgentSwap(dnp, {
-          messageType: 'counter',
-          negotiationState: {
-            ...dnp.negotiationState,
-            roundNumber: dnp.negotiationState.roundNumber + 1,
-            parameters: verdict.value.parameters,
-          },
-        });
-        this.publishDnp(eventBus, requestContext, counter, 'Deterministic counter-offer');
-        return;
-      }
-
-      const accept: DnpPayload = withAgentSwap(dnp, {
-        messageType: 'accept',
-        negotiationState: {
-          ...dnp.negotiationState,
-          roundNumber: dnp.negotiationState.roundNumber + 1,
-        },
-      });
-      this.publishDnp(eventBus, requestContext, accept, 'Accepting terms as proposed');
+      this.publishDnp(eventBus, requestContext, auto.dnp, auto.rationale);
       return;
     }
 
@@ -150,24 +127,4 @@ export class DnpNegotiationExecutor implements AgentExecutor {
     eventBus.publish(response);
     eventBus.finished();
   }
-}
-
-function withAgentSwap(
-  inbound: DnpPayload,
-  patch: Pick<DnpPayload, 'messageType' | 'negotiationState'>,
-): DnpPayload {
-  const proposedBy = inbound.recipientAgentId;
-  const senderAgentId = inbound.recipientAgentId;
-  const recipientAgentId = inbound.senderAgentId;
-
-  return {
-    ...inbound,
-    ...patch,
-    senderAgentId,
-    recipientAgentId,
-    negotiationState: {
-      ...patch.negotiationState,
-      proposedBy,
-    },
-  };
 }

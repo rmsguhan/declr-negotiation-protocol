@@ -4,7 +4,6 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@a2a-js/sdk": "^0.3.13",
     "@declr/dnp-agent": "*",
     "@declr/dnp-protocol": "*",
     "@declr/dnp-strategies": "*",
