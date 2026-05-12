@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": false,
+    "noEmit": true
+  },
+  "files": [],
+  "references": [
+    { "path": "./packages/protocol" },
+    { "path": "./packages/strategies" },
+    { "path": "./packages/agent" }
+  ]
+}

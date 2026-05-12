@@ -1,0 +1,17 @@
+{
+  "name": "negotiation-ui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@a2a-js/sdk": "^0.3.13",
+    "@declr/dnp-agent": "*",
+    "@declr/dnp-protocol": "*",
+    "@declr/dnp-strategies": "*",
+    "express": "^4.21.2"
+  },
+  "scripts": {
+    "build": "tsc -p .",
+    "dev": "npm run build && node ./dist/server.js"
+  }
+}

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DNP negotiation — live timeline</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div>
+        <h1>Negotiation timeline</h1>
+        <p class="sub">
+          Each send goes through real A2A JSON-RPC on this host. The seller uses the same strategies as
+          <code>seller-agent</code>.
+        </p>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel controls" aria-labelledby="ctl-h">
+        <h2 id="ctl-h">Your next message (buyer)</h2>
+        <p class="hint"><code>contextId</code> is fixed for the thread so you can run multiple rounds.</p>
+
+        <div class="grid">
+          <label>Round <input id="round" type="number" min="1" value="1" /></label>
+          <label
+            >Type
+            <select id="msgType">
+              <option value="proposal">proposal</option>
+              <option value="counter">counter</option>
+              <option value="accept">accept</option>
+            </select>
+          </label>
+          <label>Price (USD) <input id="price" type="number" step="1" value="135" /></label>
+          <label>Quantity <input id="qty" type="number" min="1" value="1" /></label>
+          <label
+            >Delivery
+            <select id="method">
+              <option value="postal">postal</option>
+              <option value="courier">courier</option>
+              <option value="hand_deliver">hand_deliver</option>
+            </select>
+          </label>
+          <label>Speed min (d) <input id="dmin" type="number" value="3" /></label>
+          <label>Speed max (d) <input id="dmax" type="number" value="6" /></label>
+        </div>
+
+        <div class="actions">
+          <button type="button" id="send" class="primary">Send to seller</button>
+          <button type="button" id="reset" class="ghost">New thread (new context)</button>
+        </div>
+        <p id="status" class="status" role="status"></p>
+      </section>
+
+      <section class="panel feed" aria-labelledby="feed-h">
+        <h2 id="feed-h">Back and forth</h2>
+        <div id="timeline" class="timeline"></div>
+      </section>
+    </main>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

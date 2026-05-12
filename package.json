@@ -1,0 +1,30 @@
+{
+  "name": "@declr/negotiation-protocol-root",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ],
+  "scripts": {
+    "build": "tsc -b && npm run build -w seller-agent && npm run build -w buyer-agent && npm run build -w negotiation-ui",
+    "test": "vitest run",
+    "lint": "eslint . --max-warnings 0 && prettier --check \"**/*.{ts,json,cjs}\"",
+    "format": "prettier --write \"**/*.{ts,json,cjs}\"",
+    "demo": "node -e \"console.log(['UI timeline: npm run dev -w negotiation-ui  →  http://127.0.0.1:4173/', 'CLI: Terminal 1: npm run dev -w seller-agent', 'CLI: Terminal 2: npm run dev -w buyer-agent'].join('\\n'));\""
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "eslint": "^9.39.2",
+    "prettier": "^3.8.1",
+    "typescript": "5.8.3",
+    "typescript-eslint": "^8.53.1",
+    "vitest": "^3.2.4",
+    "@types/node": "^22.15.3",
+    "@types/express": "^5.0.3"
+  }
+}

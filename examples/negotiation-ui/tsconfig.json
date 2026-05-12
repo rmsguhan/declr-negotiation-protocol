@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "noEmit": false
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["dist"],
+  "references": [
+    { "path": "../../packages/protocol" },
+    { "path": "../../packages/strategies" },
+    { "path": "../../packages/agent" }
+  ]
+}

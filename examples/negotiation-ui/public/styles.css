@@ -1,0 +1,233 @@
+:root {
+  color-scheme: dark;
+  --bg: #0f1419;
+  --panel: #1a222c;
+  --border: #2a3544;
+  --text: #e6edf3;
+  --muted: #8b9cb3;
+  --buyer: #3d8bfd;
+  --buyer-bg: rgba(61, 139, 253, 0.12);
+  --seller: #3fb950;
+  --seller-bg: rgba(63, 185, 80, 0.12);
+  --danger: #f85149;
+  font-family: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.45;
+  min-height: 100vh;
+}
+
+.top {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, #141c24 0%, var(--bg) 100%);
+}
+
+.top h1 {
+  margin: 0 0 0.35rem;
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.sub {
+  margin: 0;
+  color: var(--muted);
+  max-width: 52rem;
+  font-size: 0.9rem;
+}
+
+code {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 0.85em;
+  background: #0d1117;
+  padding: 0.12em 0.35em;
+  border-radius: 4px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 340px) 1fr;
+  gap: 0;
+  min-height: calc(100vh - 5.5rem);
+}
+
+@media (max-width: 840px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.panel {
+  padding: 1.25rem 1.5rem;
+}
+
+.controls {
+  border-right: 1px solid var(--border);
+  background: var(--panel);
+}
+
+@media (max-width: 840px) {
+  .controls {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.panel h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.hint {
+  margin: 0 0 1rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.grid {
+  display: grid;
+  gap: 0.65rem 1rem;
+  grid-template-columns: 1fr 1fr;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+input,
+select {
+  font: inherit;
+  padding: 0.45rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: #0d1117;
+  color: var(--text);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.1rem;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--border);
+}
+
+button.primary {
+  background: var(--buyer);
+  border-color: transparent;
+  color: #fff;
+  font-weight: 600;
+}
+
+button.ghost {
+  background: transparent;
+  color: var(--muted);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.status {
+  margin: 0.75rem 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+  min-height: 1.2em;
+}
+
+.status.err {
+  color: var(--danger);
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.turn {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #121820;
+}
+
+.msg {
+  padding: 0.85rem 1rem;
+  border-left: 4px solid transparent;
+}
+
+.msg.buyer {
+  border-left-color: var(--buyer);
+  background: var(--buyer-bg);
+}
+
+.msg.seller {
+  border-left-color: var(--seller);
+  background: var(--seller-bg);
+}
+
+.msg .tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.35rem;
+  opacity: 0.9;
+}
+
+.msg .one-line {
+  font-size: 0.92rem;
+  margin: 0 0 0.5rem;
+}
+
+.msg details {
+  font-size: 0.8rem;
+}
+
+.msg summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.msg pre {
+  margin: 0.5rem 0 0;
+  padding: 0.65rem;
+  background: #0a0e12;
+  border-radius: 6px;
+  overflow: auto;
+  max-height: 220px;
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+.empty {
+  color: var(--muted);
+  font-size: 0.9rem;
+  padding: 2rem 0;
+  text-align: center;
+}
